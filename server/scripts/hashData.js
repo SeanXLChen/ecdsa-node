@@ -2,7 +2,7 @@ import { keccak256 } from "ethereum-cryptography/keccak";
 import { toHex, utf8ToBytes } from "ethereum-cryptography/utils";
 
 // Example data
-const RECIPIENT = "09ffdf9d9a21b727d50df199978097dbc9ced483";
+const RECIPIENT = "3a536a8e6f960ae56095820669a58fe77d423856ba2cff925568a7f3be1e458651d771e4fd8e6cf9885fae5fd5b178b999912df2d65c90f640be2e0a55a54d46";
 const AMOUNT = "2"; // This could be a string to avoid precision issues in JavaScript
 
 function hashData(recipient, amount) {
