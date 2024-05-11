@@ -2,8 +2,8 @@ import { keccak256 } from "ethereum-cryptography/keccak";
 import { toHex, utf8ToBytes } from "ethereum-cryptography/utils";
 
 // Example data
-const recipient = "0x1234567890abcdef1234567890abcdef12345678";
-const amount = "100"; // This could be a string to avoid precision issues in JavaScript
+const RECIPIENT = "09ffdf9d9a21b727d50df199978097dbc9ced483";
+const AMOUNT = "2"; // This could be a string to avoid precision issues in JavaScript
 
 function hashData(recipient, amount) {
     // Combine the recipient and amount into one string
@@ -16,6 +16,6 @@ function hashData(recipient, amount) {
     return messageHashBytes;
 }
 
-console.log('Message Hash:', toHex(hashData(recipient, amount)));
+// console.log('Message Hash:', toHex(hashData(recipient, amount)));
 
 export { hashData };

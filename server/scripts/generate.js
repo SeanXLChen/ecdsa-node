@@ -19,8 +19,6 @@ const compressedPublicKey = secp256k1.getPublicKey(privateKey, true);
 
 const ethereumAddress = getAddress(uncompressedPublicKey); // 在生成以太坊地址时，必须使用未压缩的公钥以确保地址的正确生成。对于其他操作，如签名和验证，压缩与否通常不影响操作的正确性
 
-
-console.log("Compressed Public Key (hex):", toHex(compressedPublicKey));
 console.log("Private Key (hex):", toHex(privateKey));
 console.log("Uncompressed Public Key (hex):", toHex(uncompressedPublicKey));
 console.log("Compressed Public Key (hex):", toHex(compressedPublicKey));
