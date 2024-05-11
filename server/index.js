@@ -1,3 +1,9 @@
+// secp256k1 elliptic curve operations
+import { secp256k1 } from "ethereum-cryptography/secp256k1.js";
+// utilities
+import { hexToBytes, toHex, utf8ToBytes } from "ethereum-cryptography/utils.js";
+import hashData from "./scripts/hashData.js";
+import getAddress from "./scripts/getEthereumAddress.js";
 import express from 'express';
 const app = express();
 import cors from 'cors';
@@ -19,17 +25,41 @@ app.get("/balance/:address", (req, res) => {
 });
 
 app.post("/send", (req, res) => {
-  const { sender, recipient, amount } = req.body;
+  const { recipient, amount, signature, messageHash } = req.body;
 
-  setInitialBalance(sender);
-  setInitialBalance(recipient);
+  // Recreate the message hash from the recipient and amount
+  const msgHashBytes = hashData(recipient, amount);
 
-  if (balances[sender] < amount) {
-    res.status(400).send({ message: "Not enough funds!" });
-  } else {
-    balances[sender] -= amount;
-    balances[recipient] += amount;
-    res.send({ balance: balances[sender] });
+  // Verify the message hash
+  if (toHex(msgHashBytes) !== messageHash) {
+    res.status(400).send({ message: "Invalid message hash." });
+    return;
+  }
+
+  try {
+    const sigBytes = utils.hexToBytes(signature);
+
+    // Recover the public key from the signature
+    const publicKeyRecovered = secp256k1.recoverPublicKey(messageHash, sigBytes);
+    const sender = utils.bytesToHex(publicKeyRecovered); // Convert public key to address or use as is
+
+    // Verify the signature with the recovered public key
+    if (secp256k1.verify(sigBytes, messageHash, publicKeyRecovered)) {
+      setInitialBalance(sender);
+      setInitialBalance(recipient);
+
+      if (balances[sender] < amount) {
+        res.status(400).send({ message: "Not enough funds!" });
+      } else {
+        balances[sender] -= amount;
+        balances[recipient] += amount;
+        res.send({ balance: balances[sender] });
+      }
+    } else {
+      res.status(401).send("Invalid signature.");
+    }
+  } catch (error) {
+    res.status(500).send("Error processing the transaction.");
   }
 });
 
