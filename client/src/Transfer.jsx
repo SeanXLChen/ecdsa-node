@@ -36,9 +36,11 @@ function Transfer({ address, setBalance }) {
       const {
         data: { balance },
       } = await server.post(`send`, {
-        sender: address,
-        amount: parseInt(sendAmount),
         recipient,
+        amount: parseInt(sendAmount),
+        messageHash,
+        sigHex: signature,
+        bit: parseInt(bit),
       });
       setBalance(balance);
     } catch (ex) {
