@@ -2,8 +2,9 @@
 import { secp256k1 } from "ethereum-cryptography/secp256k1.js";
 // utilities
 import { hexToBytes, toHex, utf8ToBytes } from "ethereum-cryptography/utils.js";
-import hashData from "./scripts/hashData.js";
-import getAddress from "./scripts/getEthereumAddress.js";
+import { hashData } from "./scripts/hashData.js";
+import { getAddress } from "./scripts/getEthereumAddress.js";
+
 import express from 'express';
 const app = express();
 import cors from 'cors';
@@ -16,6 +17,8 @@ const balances = {
   "0x1": 100,
   "0x2": 50,
   "0x3": 75,
+  "03385c3a6ec0b9d57a4330dbd6284989be5bd00e41c535f9ca39b6ae7c521b81cd": 1000,
+  "03d75ed19d5d5d0df49c74b7aa299a2fc25a6f455512bf6e4ca38ce0afbf1df0e4": 88,
 };
 
 app.get("/balance/:address", (req, res) => {
@@ -25,30 +28,38 @@ app.get("/balance/:address", (req, res) => {
 });
 
 app.post("/send", (req, res) => {
-  const { recipient, amount, signature, messageHash } = req.body;
+  const { recipient, amount, sigHex, bit, messageHash } = req.body;
+  const recoveryBit = parseInt(bit);
 
-  // Recreate the message hash from the recipient and amount
-  const msgHashBytes = hashData(recipient, amount);
-
-  // Verify the message hash
-  if (toHex(msgHashBytes) !== messageHash) {
-    res.status(400).send({ message: "Invalid message hash." });
-    return;
-  }
+  console.log('recoveryBit:', recoveryBit);
 
   try {
-    const sigBytes = utils.hexToBytes(signature);
+    // Recreate the message hash from the recipient and amount
+    const msgHashBytes = hashData(recipient, amount);
 
-    // Recover the public key from the signature
-    const publicKeyRecovered = secp256k1.recoverPublicKey(messageHash, sigBytes);
-    const sender = utils.bytesToHex(publicKeyRecovered); // Convert public key to address or use as is
+    // Verify the message hash
+    if (toHex(msgHashBytes) !== messageHash) {
+      res.status(400).send({ message: "Invalid message hash." });
+      return;
+    }
+
+    let signature = secp256k1.Signature.fromCompact(sigHex);
+    signature = signature.addRecoveryBit(recoveryBit); // bit is not serialized into compact / der format
+
+    console.log('signature:', signature);
+
+    // Recover the (compressed) public key from the signature
+    const publicKeyRecovered = signature.recoverPublicKey(messageHash, signature).toRawBytes();
+    const sender = toHex(publicKeyRecovered);
+    console.log('publicKeyRecovered:', toHex(publicKeyRecovered));
 
     // Verify the signature with the recovered public key
-    if (secp256k1.verify(sigBytes, messageHash, publicKeyRecovered)) {
+    if (secp256k1.verify(signature, messageHash, publicKeyRecovered)) {
       setInitialBalance(sender);
       setInitialBalance(recipient);
 
       if (balances[sender] < amount) {
+        console.log('balances[sender]:', balances[sender])
         res.status(400).send({ message: "Not enough funds!" });
       } else {
         balances[sender] -= amount;
