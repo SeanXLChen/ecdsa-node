@@ -17,7 +17,9 @@ function hashData(recipient, amount) {
 function Transfer({ address, setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
-  const [messageHash, setMessageHash] = useState(""); // Declare messageHash state variable
+  const [messageHash, setMessageHash] = useState("");
+  const [signature, setSignature] = useState("");
+  const [bit, setBit] = useState("");
 
   useEffect(() => {
     const hash = hashData(recipient, sendAmount);
@@ -66,8 +68,32 @@ function Transfer({ address, setBalance }) {
         ></input>
       </label>
 
-      <p>Message Hash: {messageHash}</p>
+      <label>
+        Message Hash
+        <input
+          placeholder="Message Hash in Hexadecimal"
+          value={messageHash}
+          disabled
+        ></input>
+      </label>
 
+      <label>
+        Signature (Hex)
+        <input
+          placeholder="Sign the message hash with your private key"
+          value={signature}
+          onChange={setValue(setSignature)}
+        ></input>
+      </label>
+
+      <label>
+        Recovery Bit
+        <input
+          placeholder="Recovery Bit of the signature"
+          value={bit}
+          onChange={setValue(setBit)}
+        ></input>
+      </label>
 
       <input type="submit" className="button" value="Transfer" />
     </form>
