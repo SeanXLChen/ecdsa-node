@@ -22,5 +22,6 @@ console.log('recovered pub:', toHex(publicKeyRecovered)); // public key can be r
 console.log(toHex(publicKey) === toHex(publicKeyRecovered) ? 'Recovered public key is correct' : 'Recovered public key is incorrect');
 console.log('sig:', signature.toCompactHex());
 console.log('sig:', signature);
+console.log('recovery bit:', signature.recovery);
 console.log('isSigned:', isSigned ? 'Signature is correct' : 'Signature is incorrect');
 console.log('messageHash:', toHex(messageHash));
