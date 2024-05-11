@@ -1,9 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import server from "./server";
+import { keccak256 } from "ethereum-cryptography/keccak";
+import { toHex, utf8ToBytes } from "ethereum-cryptography/utils";
+
+function hashData(recipient, amount) {
+  // Combine the recipient and amount into one string
+  // You might choose to separate them in a way that avoids any possible ambiguity
+  const data = `${recipient}:${amount}`;
+  // Convert the data to bytes if necessary
+  const dataBytes = utf8ToBytes(data);
+  // Compute the keccak256 hash of the data
+  const messageHashBytes = keccak256(dataBytes);
+  return messageHashBytes;
+}
 
 function Transfer({ address, setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [messageHash, setMessageHash] = useState(""); // Declare messageHash state variable
+
+  useEffect(() => {
+    const hash = hashData(recipient, sendAmount);
+    const hexHash = toHex(hash);
+    setMessageHash(hexHash);
+  }, [recipient, sendAmount]);
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
@@ -29,6 +49,15 @@ function Transfer({ address, setBalance }) {
       <h1>Send Transaction</h1>
 
       <label>
+        Recipient
+        <input
+          placeholder="Type an address, for example: 0x2"
+          value={recipient}
+          onChange={setValue(setRecipient)}
+        ></input>
+      </label>
+
+      <label>
         Send Amount
         <input
           placeholder="1, 2, 3..."
@@ -37,14 +66,8 @@ function Transfer({ address, setBalance }) {
         ></input>
       </label>
 
-      <label>
-        Recipient
-        <input
-          placeholder="Type an address, for example: 0x2"
-          value={recipient}
-          onChange={setValue(setRecipient)}
-        ></input>
-      </label>
+      <p>Message Hash: {messageHash}</p>
+
 
       <input type="submit" className="button" value="Transfer" />
     </form>
