@@ -49,7 +49,7 @@ app.post("/send", (req, res) => {
     console.log('signature:', signature);
 
     // Recover the (compressed) public key from the signature
-    const publicKeyRecovered = signature.recoverPublicKey(messageHash, signature).toRawBytes();
+    const publicKeyRecovered = signature.recoverPublicKey(messageHash).toRawBytes();
     const sender = toHex(publicKeyRecovered);
     console.log('publicKeyRecovered:', toHex(publicKeyRecovered));
 
